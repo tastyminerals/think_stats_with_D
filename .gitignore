@@ -22,3 +22,13 @@ docs/
 
 # Code coverage
 *.lst
+
+# Ignore python files, used for testing results
+*.py
+*.pyc
+
+# Ignore gzipped files
+*.gz
+
+# Ignore .vscode dir
+.vscode

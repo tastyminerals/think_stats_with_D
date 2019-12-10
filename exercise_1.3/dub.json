@@ -1,0 +1,12 @@
+{
+	"name": "nsfg_dataset",
+	"authors": [
+		"tasty"
+	],
+	"dependencies": {
+		"mir": "~>3.2.0"
+	},
+	"description": "NSFG dataset converter for cycle 6 [2002 - 2003] data.",
+	"copyright": "Copyright © 2019, tasty",
+	"license": "MIT"
+}
