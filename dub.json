@@ -1,8 +1,9 @@
 {
-	"name": "nsfg_dataset",
+	"name": "survey",
 	"authors": [
 		"tasty"
 	],
+	"targetType": "executable",
 	"dependencies": {
 		"mir": "~>3.2.0"
 	},
