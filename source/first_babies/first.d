@@ -1,14 +1,10 @@
-#!/usr/bin/env dub
-/+ dub.sdl:
-    name "first"
-	dependency "mir" version="~>3.2.0"
-+/
-
 module first_babies.first;
 
 import mir.ndslice;
 
-void getFirstBabies(Slice!(real*, 2LU, cast(mir_slice_kind)2) pregSlice, ulong[string] function() idxOf)
+alias MirSlice = Slice!(real*, 2LU, cast(mir_slice_kind)2);
+
+void getFirstBabies(MirSlice pregSlice, ulong[string] function() idxOf)
 {
     /*
     Task 1.
@@ -24,7 +20,7 @@ void getFirstBabies(Slice!(real*, 2LU, cast(mir_slice_kind)2) pregSlice, ulong[s
     import std.stdio;
     import std.array;
     import std.algorithm;
-    import std.math : abs;
+    import std.math : abs, sqrt;
 
     assert(pregSlice.length == 13_593);
     writeln("Number of pregnancies: ", pregSlice.length);
@@ -56,11 +52,11 @@ void getFirstBabies(Slice!(real*, 2LU, cast(mir_slice_kind)2) pregSlice, ulong[s
     "birthord":
         1 if first and then +1;
     */
-    auto outcome1 = pregSlice.filter!(row => row[idxOf()["outcome"]] == 1).array;
-    auto birthordOther = outcome1.partition!(row => row[idxOf()["birthord"]] == 1);
-    auto birthord1 = outcome1[0 .. outcome1.length - birthordOther.length];
-    writeln("First babies: ", birthord1.length);
-    writeln("Second and other babies: ", birthordOther.length);
+    auto liveBirths = pregSlice.filter!(row => row[idxOf()["outcome"]] == 1).array;
+    auto birthordOtherRows = liveBirths.partition!(row => row[idxOf()["birthord"]] == 1);
+    auto birthord1Rows = liveBirths[0 .. liveBirths.length - birthordOtherRows.length];
+    writeln("First babies: ", birthord1Rows.length);
+    writeln("Second and other babies: ", birthordOtherRows.length);
 
     /*
     Task 4.
@@ -69,11 +65,27 @@ void getFirstBabies(Slice!(real*, 2LU, cast(mir_slice_kind)2) pregSlice, ulong[s
     "prglength":
         represented in weeks
     */
-    real averageBirthord1 = birthord1.map!(row => row[idxOf()["prglength"]])
-        .sum / birthord1.length;
+    const real averageBirthord1 = birthord1Rows.map!(row => row[idxOf()["prglength"]])
+        .sum / birthord1Rows.length;
     writeln("Average pregnancy length for first baby (weeks): ", averageBirthord1);
-    real averageBirthordOther = birthordOther.map!(row => row[idxOf()["prglength"]])
-        .sum / birthordOther.length;
+    const real averageBirthordOther = birthordOtherRows.map!(row => row[idxOf()["prglength"]])
+        .sum / birthordOtherRows.length;
     writeln("Average pregnancy length for second and other babies (weeks): ", averageBirthordOther);
     writeln("Difference (days): ", abs(averageBirthord1 - averageBirthordOther) * 7);
+
+    /*
+    Task 5.
+    Compute std of gestation time for first and other babies.
+    Does it look like the spread is the same for the two groups?
+    "prglength":
+        represented in weeks
+    */
+    import thinkstats: variance;
+    auto birthord1 = birthord1Rows.map!(row => row[idxOf()["prglength"]]);
+    double birthord1Std = birthord1.array.variance.sqrt;
+    writeln("First babies pregnancy length std (weeks): ", birthord1Std);
+    auto birthordOther = birthordOtherRows.map!(row => row[idxOf()["prglength"]]);
+    double birthordOtherStd = birthordOther.array.variance.sqrt;
+    writeln("Second and other babies pregnancy length std (weeks): ", birthordOtherStd);
+    writeln("Difference (days): ", abs(birthord1Std - birthordOtherStd) * 7);
 }

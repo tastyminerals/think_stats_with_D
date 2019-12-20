@@ -10,7 +10,7 @@ Reimplementation of survey.py from "Think Stats: Probability and Statistics for 
 This script reads and parses "2002FemPreg.dat.gz" and "2002FemResp.dat.gz" files.
 
 HOWTO:
-    Build: dub build --compiler=ldc2 --single survey.d
+    Build: dub build --compiler=ldc2
     Run: ./survey
 */
 import std.stdio;
@@ -20,6 +20,7 @@ import std.array;
 import std.conv : to;
 import std.math;
 import std.typecons;
+import std.format;
 
 enum pregnancies2002 = "nsfg_dataset/2002FemPreg.dat";
 enum respondents2002 = "nsfg_dataset/2002FemResp.dat";
@@ -88,13 +89,24 @@ auto toDataSlice(string fileName, in Column[] cols)
     return dataSlice;
 }
 
+
+void pumpkins() {
+    import thinkstats : meanVar;
+    int[] pums = [1, 1, 1, 3, 3, 591];
+    auto tup = meanVar(pums);
+    double q = tup.var.sqrt;
+    writeln(format("\nPumpkins! mean: %s, variance: %s, std: %s\n", tup.mu, tup.var, q));
+}
+
+
 void main()
 {
     import first_babies.first : getFirstBabies;
 
     auto pregSlice = toDataSlice(pregnancies2002, PREGCOLS);
-    writeln(typeof(pregSlice).stringof);
     getFirstBabies(pregSlice, &getColIndex);
+
+
 }
 
 unittest
