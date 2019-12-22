@@ -5,7 +5,8 @@
 	],
 	"targetType": "executable",
 	"dependencies": {
-		"mir": "~>3.2.0"
+		"mir": "~>3.2.0",
+        "ggplotd": "~>1.2.0"
 	},
 	"description": "NSFG dataset converter for cycle 6 [2002 - 2003] data.",
 	"copyright": "Copyright © 2019, tasty",
