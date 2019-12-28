@@ -5,7 +5,6 @@ A collection of simple helper functions.
 D adaptation of Python thinkstats.py version available here: thinkstats.com/thinkstats.py
 */
 
-import mir.ndslice;
 import std.algorithm : map, sort, sum;
 import std.array;
 import std.conv : to;
@@ -13,9 +12,6 @@ import std.range : drop, dropBack;
 import std.stdio;
 import std.typecons;
 import std.random : uniform, Random;
-
-alias MirSlice = Slice!(real*, 2LU, cast(mir_slice_kind) 2);
-alias MirArr = mir_slice!(real*, 1LU, cast(mir_slice_kind) 2)[];
 
 // Compute a simple mean of a slice. D std library has a build-in mean which is more sophisticated.
 double simpleMean(T)(T[] arr)

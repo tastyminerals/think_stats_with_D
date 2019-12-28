@@ -3,12 +3,7 @@ module exercises.first;
 The exercises that work with mir.ndslice array generated from NSFG dataset.
 */
 
-
-import mir.ndslice;
-
-alias MirSlice = Slice!(real*, 2LU, cast(mir_slice_kind)2);
-
-void runExercises(MirSlice pregSlice, ulong[string] function() idxOf)
+void runExercises(real[][] pregData, ulong[string]function() idxOf)
 {
     /*
     Exercise 1.2
@@ -26,8 +21,8 @@ void runExercises(MirSlice pregSlice, ulong[string] function() idxOf)
     import std.algorithm;
     import std.math : abs, sqrt;
 
-    assert(pregSlice.length == 13_593);
-    writeln("Number of pregnancies: ", pregSlice.length);
+    assert(pregData.length == 13_593);
+    writeln("Number of pregnancies: ", pregData.length);
 
     /*
     Exercise 1.3
@@ -43,9 +38,9 @@ void runExercises(MirSlice pregSlice, ulong[string] function() idxOf)
         6 = Current pregnancy
     */
 
-    auto res = pregSlice[0 .. $, idxOf()["outcome"]].filter!("a == 1").sum;
-    assert(res == 9148);
-    writeln("Number of live births: ", res);
+    auto res = pregData.filter!(row => row[idxOf()["outcome"]] == 1).array;
+    assert(res.length == 9148);
+    writeln("Number of live births: ", res.length);
 
     /*
     Modify the loop to partition the live birth records into two groups, one for first babies and one for the others.
@@ -55,7 +50,7 @@ void runExercises(MirSlice pregSlice, ulong[string] function() idxOf)
     "birthord":
         1 if first and then +1;
     */
-    auto liveBirths = pregSlice.filter!(row => row[idxOf()["outcome"]] == 1).array;
+    auto liveBirths = pregData.filter!(row => row[idxOf()["outcome"]] == 1).array;
     auto birthordOtherRows = liveBirths.partition!(row => row[idxOf()["birthord"]] == 1);
     auto birthord1Rows = liveBirths[0 .. liveBirths.length - birthordOtherRows.length];
     writeln("First babies: ", birthord1Rows.length);
@@ -70,8 +65,8 @@ void runExercises(MirSlice pregSlice, ulong[string] function() idxOf)
     const real averageBirthord1 = birthord1Rows.map!(row => row[idxOf()["prglength"]])
         .sum / birthord1Rows.length;
     writeln("Average pregnancy length for first baby (weeks): ", averageBirthord1);
-    const real averageBirthordOther = birthordOtherRows.map!(row => row[idxOf()["prglength"]])
-        .sum / birthordOtherRows.length;
+    const real averageBirthordOther = birthordOtherRows.map!(
+            row => row[idxOf()["prglength"]]).sum / birthordOtherRows.length;
     writeln("Average pregnancy length for second and other babies (weeks): ", averageBirthordOther);
     writeln("Difference (days): ", abs(averageBirthord1 - averageBirthordOther) * 7);
 
@@ -82,7 +77,8 @@ void runExercises(MirSlice pregSlice, ulong[string] function() idxOf)
     "prglength":
         represented in weeks
     */
-    import utils.thinkstats: variance;
+    import utils.thinkstats : variance;
+
     auto prglength1 = birthord1Rows.map!(row => row[idxOf()["prglength"]]);
     double prglength1Std = prglength1.array.variance.sqrt;
     writeln("First babies pregnancy length std (weeks): ", prglength1Std);
@@ -97,9 +93,10 @@ void runExercises(MirSlice pregSlice, ulong[string] function() idxOf)
     */
     // instead of writing a separate function we implement mode as maxValueKey member function in Map struct
     import utils.pmf;
-    import std.range: enumerate, chain, zip;
+    import std.range : enumerate, chain, zip, repeat;
     import std.conv;
     import std.typecons;
+
     real[real] aarr;
     auto pregs = Map(prglength1.array, aarr, "prglength1");
     auto pregsPmf = pregs;
@@ -108,23 +105,18 @@ void runExercises(MirSlice pregSlice, ulong[string] function() idxOf)
 
     // display frequency values in descending order
     import std.format;
+
     auto pregsModes = pregs.items.array.sort!((a, b) => a.key > b.key);
     writeln("Pregnancy lengths modes (weeks -> frequency): ");
     pregsModes.each!(p => writeln(format("    %s --> %s", p.key, p.value)));
 
     // plot prglength1 and prglengthOther on a histogram
-    import utils.plotme : plotMeHistogram;
+    import utils.plotme : histogramOfTwoClasses;
 
     auto xs = prglength1.chain(prglengthOther);
-    auto cols = "a".repeat(prglength1.length).chain("b".repeat(prglengthOther.length));
+    auto cols = "1".repeat(prglength1.length).chain("2".repeat(prglengthOther.length));
     assert(xs.length == cols.length);
     auto pregsData = xs.zip(cols).array;
-    plotMeHistogram(pregsData);
-
-    
-
-
-    
-     
+    histogramOfTwoClasses(pregsData, "first_and_second_babies");
 
 }

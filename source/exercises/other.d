@@ -4,7 +4,6 @@ Other exercises that do not directly involve NSFG dataset.
 */
 
 import std.stdio;
-import mir.ndslice;
 import utils.pmf;
 import std.algorithm : filter;
 import std.random : uniform;
@@ -12,8 +11,6 @@ import std.range;
 import std.array;
 import std.typecons;
 import std.conv : to;
-
-alias MirSlice = Slice!(real*, 2LU, cast(mir_slice_kind) 2);
 
 Map remainingLifetime(Map pmf, int age)
 {

@@ -15,13 +15,17 @@ import std.random : uniform;
 import std.range;
 import std.typecons : Tuple, tuple;
 
+/// General struct to represent both Histogram and PMF
 struct Map
 {
+    /// A simple array that is used to initialize associative array "dict"
     real[] data;
+    /// Associative array that is initialized from "data" if empty
     real[real] dict;
+    /// An arbitrary name of the struct
     string name;
 
-    // Histogram and PMF constructor
+    /// Histogram and PMF constructor
     this(real[] arr, real[real] aarr, string name)
     {
         this.name = name;
@@ -33,7 +37,8 @@ struct Map
         }
     }
 
-    this(this) {
+    this(this)
+    {
         data = data.dup;
         dict = dict.dup;
     }
@@ -44,54 +49,54 @@ struct Map
         return this.dict.get(x, 0);
     }
 
-    // get an unsorted sequence of frequencies/probabilities
+    /// Get an unsorted sequence of frequencies/probabilities
     auto values()
     {
         return this.dict.byValue;
     }
 
-    // checks whether the keys of a given Map are a subset of the current one
+    /// Checks whether the keys of a given Map are a subset of the current one
     bool isSubset(Map otherHist)
     {
         return canFind(this.data, otherHist.data);
     }
 
-    // get an unsorted sequence of keys
+    /// Get an unsorted sequence of keys
     auto keys()
     {
         return this.dict.byKey;
     }
 
-    // get a sequence of key -> value pairs
+    /// Get a sequence of key -> value pairs
     auto items()
     {
         return this.dict.byKeyValue;
     }
 
-    // generate a sorted sequence of points suitable for plotting
+    /// Generate a sorted sequence of points suitable for plotting
     SortedRange!(Tuple!(real, real)[]) render() pure
     {
         return this.dict.byPair.map!(p => tuple(p.key, p.value)).array.sort;
     }
 
-    string toString()
+    string toString() const
     {
         return this.render.map!(t => format("%s -> %s", t[0], t[1])).array.joiner("\n").to!string;
     }
 
-    // given x key set its value
+    /// Given x key set its value
     void set(real x, real y = 0)
     {
         this.dict[x] = y;
     }
 
-    // given x key increment its value
+    /// Given x key increment its value
     void incr(real x, real term = 1)
     {
         this.dict[x] += term;
     }
 
-    // substract the keys of a given Map from this Map
+    /// Substract the keys of a given Map from this Map
     void substactMap(Map otherHist)
     {
         foreach (pair; otherHist.items)
@@ -100,49 +105,50 @@ struct Map
         }
     }
 
-    // scale given x key value by the factor
+    /// Scale given x key value by the factor
     void mult(real x, real factor)
     {
         this.dict[x] *= factor;
     }
 
-    // remove given x key value
+    /// Remove given x key value
     void remove(real x)
     {
         this.dict.remove(x);
     }
 
-    // get total number of freqs/probs
+    /// Get total number of freqs/probs
     real total()
     {
         return this.values.sum;
     }
 
-    // return max freq/prob value from the Map
+    /// Return max freq/prob value from the Map
     real maxValue()
     {
         return this.dict.byValue.maxElement;
     }
 
-    // return the key of the max freq/prob value from the Map
-    real maxValueKey() {
+    /// Return the key of the max freq/prob value from the Map
+    real maxValueKey()
+    {
         return this.items.maxElement!(pair => pair.value).key;
     }
 
-    // normalize map so that sum of its keys equals to 1
+    /// Normalize map so that sum of its keys equals to 1
     void normalize(float fraction = 1.0)
     {
-        real factor = fraction / this.total;
+        const real factor = fraction / this.total;
         foreach (ref k; this.keys)
         {
             this.dict[k] *= factor;
         }
     }
 
-    // choose a random key from the map
+    /// Choose a random key from the map
     real random()
     {
-        ulong rndIdx = uniform(0, this.dict.length);
+        const ulong rndIdx = uniform(0, this.dict.length);
         int i;
         real key;
         foreach (ref k; this.keys)
@@ -157,7 +163,7 @@ struct Map
         return key;
     }
 
-    // compute PMF mean
+    /// Compute PMF mean
     real pmfMean()
     {
         real mu = 0.0;
@@ -168,7 +174,7 @@ struct Map
         return mu;
     }
 
-    // compute PMF variance
+    /// Compute PMF variance
     real pmfVariance(real mu = 0)
     {
         if (mu == 0)
@@ -183,7 +189,7 @@ struct Map
         return variance;
     }
 
-    // transform log probabilities
+    /// Transform log probabilities
     void pmfLog()
     {
         real m = this.maxValue;
@@ -193,7 +199,7 @@ struct Map
         }
     }
 
-    // exponentiate probabilities
+    /// Exponentiate probabilities
     void pmfExp()
     {
         real m = this.maxValue;
