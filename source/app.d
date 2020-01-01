@@ -73,15 +73,11 @@ real[] convertLines(in string[] lines, in Column[] cols)
 
 auto toDataSlice(string fileName, in Column[] cols)
 {
-
     auto lines = readFileByLines(fileName);
     writeln(lines.length, " lines read");
     real[] records = convertLines(lines, cols);
     writeln(records.length, " records created");
-    // create a 2D ndarray from converted records
     auto matrix = records.chunks(cols.length).array;
-    // auto dataSlice = records.sliced(lines.length, cols.length);
-    // return dataSlice;
     return matrix;
 }
 
@@ -98,12 +94,13 @@ void pumpkins() {
 
 void main()
 {
-    import mod1 = exercises.first : runExercises;
-    // import mod2 = exercises.other: runExercises;
+    import nsfg = exercises.nsfg: runExercises;
+    // import other = exercises.other: runExercises;
 
     real[][] pregSlice = toDataSlice(pregnancies2002, PREGCOLS);
-    mod1.runExercises(pregSlice, &getColIndex);
+    nsfg.runExercises(pregSlice, &getColIndex);
     // mod2.runExercises;
+    
 
 }
 

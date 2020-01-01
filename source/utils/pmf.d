@@ -79,7 +79,7 @@ struct Map
         return this.dict.byPair.map!(p => tuple(p.key, p.value)).array.sort;
     }
 
-    string toString() const
+    string toString()
     {
         return this.render.map!(t => format("%s -> %s", t[0], t[1])).array.joiner("\n").to!string;
     }
@@ -117,8 +117,8 @@ struct Map
         this.dict.remove(x);
     }
 
-    /// Get total number of freqs/probs
-    real total()
+    /// Get the sum of freqs/probs
+    real valuesSum()
     {
         return this.values.sum;
     }
@@ -138,7 +138,7 @@ struct Map
     /// Normalize map so that sum of its keys equals to 1
     void normalize(float fraction = 1.0)
     {
-        const real factor = fraction / this.total;
+        const real factor = fraction / this.valuesSum;
         foreach (ref k; this.keys)
         {
             this.dict[k] *= factor;

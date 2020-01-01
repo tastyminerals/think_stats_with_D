@@ -1,9 +1,7 @@
-module exercises.first;
-/*
-The exercises that work with mir.ndslice array generated from NSFG dataset.
-*/
+module exercises.nsfg;
 
-void runExercises(real[][] pregData, ulong[string]function() idxOf)
+/// The exercises that work with mir.ndslice array generated from NSFG dataset.
+void runExercises(real[][] pregsData, ulong[string]function() idxOf)
 {
     /*
     Exercise 1.2
@@ -16,13 +14,13 @@ void runExercises(real[][] pregData, ulong[string]function() idxOf)
     The result should be 13593 pregnancies.
     We follow the D implementation below.
     */
-    import std.stdio;
-    import std.array;
-    import std.algorithm;
+    import std.stdio : writeln;
+    import std.array : array;
+    import std.algorithm : each, sort, sum, partition, map, filter;
     import std.math : abs, sqrt;
 
-    assert(pregData.length == 13_593);
-    writeln("Number of pregnancies: ", pregData.length);
+    assert(pregsData.length == 13_593);
+    writeln("Number of pregnancies: ", pregsData.length);
 
     /*
     Exercise 1.3
@@ -38,7 +36,7 @@ void runExercises(real[][] pregData, ulong[string]function() idxOf)
         6 = Current pregnancy
     */
 
-    auto res = pregData.filter!(row => row[idxOf()["outcome"]] == 1).array;
+    auto res = pregsData.filter!(row => row[idxOf()["outcome"]] == 1).array;
     assert(res.length == 9148);
     writeln("Number of live births: ", res.length);
 
@@ -50,7 +48,7 @@ void runExercises(real[][] pregData, ulong[string]function() idxOf)
     "birthord":
         1 if first and then +1;
     */
-    auto liveBirths = pregData.filter!(row => row[idxOf()["outcome"]] == 1).array;
+    auto liveBirths = pregsData.filter!(row => row[idxOf()["outcome"]] == 1).array;
     auto birthordOtherRows = liveBirths.partition!(row => row[idxOf()["birthord"]] == 1);
     auto birthord1Rows = liveBirths[0 .. liveBirths.length - birthordOtherRows.length];
     writeln("First babies: ", birthord1Rows.length);
@@ -78,45 +76,29 @@ void runExercises(real[][] pregData, ulong[string]function() idxOf)
         represented in weeks
     */
     import utils.thinkstats : variance;
+    import exercises.figures;
 
-    auto prglength1 = birthord1Rows.map!(row => row[idxOf()["prglength"]]);
-    double prglength1Std = prglength1.array.variance.sqrt;
+    auto prglength1 = birthord1Rows.map!(row => row[idxOf()["prglength"]]).array;
+    double prglength1Std = prglength1.variance.sqrt;
     writeln("First babies pregnancy length std (weeks): ", prglength1Std);
-    auto prglengthOther = birthordOtherRows.map!(row => row[idxOf()["prglength"]]);
-    double prglengthOtherStd = prglengthOther.array.variance.sqrt;
+    auto prglengthOther = birthordOtherRows.map!(row => row[idxOf()["prglength"]]).array;
+    double prglengthOtherStd = prglengthOther.variance.sqrt;
     writeln("Second and other babies pregnancy length std (weeks): ", prglengthOtherStd);
     writeln("Difference (days): ", abs(prglength1Std - prglengthOtherStd) * 7);
+    generateFigure21(prglength1, prglengthOther);
+    generateFigure22(prglength1, prglengthOther);
 
     /*
     Exercise 2.3
     Write a function called mode that takes a Histogram object and returns the most frequent value.
     */
     // instead of writing a separate function we implement mode as maxValueKey member function in Map struct
-    import utils.pmf;
-    import std.range : enumerate, chain, zip, repeat;
-    import std.conv;
-    import std.typecons;
+    import utils.pmf : Map;
 
     real[real] aarr;
-    auto pregs = Map(prglength1.array, aarr, "prglength1");
-    auto pregsPmf = pregs;
-    pregsPmf.normalize;
-    writeln("Most frequent pregnancy length (weeks): ", pregsPmf.maxValueKey);
-
-    // display frequency values in descending order
-    import std.format;
-
-    auto pregsModes = pregs.items.array.sort!((a, b) => a.key > b.key);
-    writeln("Pregnancy lengths modes (weeks -> frequency): ");
-    pregsModes.each!(p => writeln(format("    %s --> %s", p.key, p.value)));
-
-    // plot prglength1 and prglengthOther on a histogram
-    import utils.plotme : histogramOfTwoClasses;
-
-    auto xs = prglength1.chain(prglengthOther);
-    auto cols = "1".repeat(prglength1.length).chain("2".repeat(prglengthOther.length));
-    assert(xs.length == cols.length);
-    auto pregsData = xs.zip(cols).array;
-    histogramOfTwoClasses(pregsData, "first_and_second_babies");
-
-}
+    auto pregs1 = Map(prglength1, aarr, "prglength1");
+    auto prg1Pmf = pregs1;
+    prg1Pmf.normalize;
+    writeln("Most frequent pregnancy length (weeks): ", prg1Pmf.maxValueKey);
+    generateFigure23(prglength1, prglengthOther);
+ }
