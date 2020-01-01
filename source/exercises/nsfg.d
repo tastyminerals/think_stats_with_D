@@ -1,5 +1,9 @@
 module exercises.nsfg;
 
+const string OUTCOME = "outcome";
+const string BIRTHORD = "birthord";
+const string PRGLENGTH = "prglength";
+
 /// The exercises that work with mir.ndslice array generated from NSFG dataset.
 void runExercises(real[][] pregsData, ulong[string]function() idxOf)
 {
@@ -18,7 +22,8 @@ void runExercises(real[][] pregsData, ulong[string]function() idxOf)
     import std.array : array;
     import std.algorithm : each, sort, sum, partition, map, filter;
     import std.math : abs, sqrt;
-
+    import std.format: format;
+    
     assert(pregsData.length == 13_593);
     writeln("Number of pregnancies: ", pregsData.length);
 
@@ -36,7 +41,7 @@ void runExercises(real[][] pregsData, ulong[string]function() idxOf)
         6 = Current pregnancy
     */
 
-    auto res = pregsData.filter!(row => row[idxOf()["outcome"]] == 1).array;
+    auto res = pregsData.filter!(row => row[idxOf()[OUTCOME]] == 1).array;
     assert(res.length == 9148);
     writeln("Number of live births: ", res.length);
 
@@ -48,8 +53,8 @@ void runExercises(real[][] pregsData, ulong[string]function() idxOf)
     "birthord":
         1 if first and then +1;
     */
-    auto liveBirths = pregsData.filter!(row => row[idxOf()["outcome"]] == 1).array;
-    auto birthordOtherRows = liveBirths.partition!(row => row[idxOf()["birthord"]] == 1);
+    auto liveBirths = pregsData.filter!(row => row[idxOf()[OUTCOME]] == 1).array;
+    auto birthordOtherRows = liveBirths.partition!(row => row[idxOf()[BIRTHORD]] == 1);
     auto birthord1Rows = liveBirths[0 .. liveBirths.length - birthordOtherRows.length];
     writeln("First babies: ", birthord1Rows.length);
     writeln("Second and other babies: ", birthordOtherRows.length);
@@ -60,7 +65,7 @@ void runExercises(real[][] pregsData, ulong[string]function() idxOf)
     "prglength":
         represented in weeks
     */
-    const real averageBirthord1 = birthord1Rows.map!(row => row[idxOf()["prglength"]])
+    const real averageBirthord1 = birthord1Rows.map!(row => row[idxOf()[PRGLENGTH]])
         .sum / birthord1Rows.length;
     writeln("Average pregnancy length for first baby (weeks): ", averageBirthord1);
     const real averageBirthordOther = birthordOtherRows.map!(
@@ -78,15 +83,15 @@ void runExercises(real[][] pregsData, ulong[string]function() idxOf)
     import utils.thinkstats : variance;
     import exercises.figures;
 
-    auto prglength1 = birthord1Rows.map!(row => row[idxOf()["prglength"]]).array;
-    double prglength1Std = prglength1.variance.sqrt;
-    writeln("First babies pregnancy length std (weeks): ", prglength1Std);
-    auto prglengthOther = birthordOtherRows.map!(row => row[idxOf()["prglength"]]).array;
-    double prglengthOtherStd = prglengthOther.variance.sqrt;
-    writeln("Second and other babies pregnancy length std (weeks): ", prglengthOtherStd);
-    writeln("Difference (days): ", abs(prglength1Std - prglengthOtherStd) * 7);
-    generateFigure21(prglength1, prglengthOther);
-    generateFigure22(prglength1, prglengthOther);
+    auto pregLengths1 = birthord1Rows.map!(row => row[idxOf()[PRGLENGTH]]).array;
+    double pregLengths1Std = pregLengths1.variance.sqrt;
+    writeln("First babies pregnancy length std (weeks): ", pregLengths1Std);
+    auto pregLengthsOther = birthordOtherRows.map!(row => row[idxOf()[PRGLENGTH]]).array;
+    double pregLengthsOtherStd = pregLengthsOther.variance.sqrt;
+    writeln("Second and other babies pregnancy length std (weeks): ", pregLengthsOtherStd);
+    writeln("Difference (days): ", abs(pregLengths1Std - pregLengthsOtherStd) * 7);
+    generateFigure21(pregLengths1, pregLengthsOther);
+    generateFigure22(pregLengths1, pregLengthsOther);
 
     /*
     Exercise 2.3
@@ -96,9 +101,43 @@ void runExercises(real[][] pregsData, ulong[string]function() idxOf)
     import utils.pmf : Map;
 
     real[real] aarr;
-    auto pregs1 = Map(prglength1, aarr, "prglength1");
-    auto prg1Pmf = pregs1;
-    prg1Pmf.normalize;
-    writeln("Most frequent pregnancy length (weeks): ", prg1Pmf.maxValueKey);
-    generateFigure23(prglength1, prglengthOther);
- }
+    auto firstBabies = Map(pregLengths1, aarr, "pregLengths1");
+    auto firstBabiesPMF = firstBabies;
+    firstBabiesPMF.normalize;
+    writeln("Most frequent pregnancy length (weeks): ", firstBabiesPMF.maxValueKey);
+    generateFigure23(pregLengths1, pregLengthsOther);
+
+    /*
+    Exercise 2.6
+    A baby is early if it is born during week 37 or earlier, on time if it is born during week 38, 39 or 40,
+    and late if it is born during week 41 or later. Ranges like these are called bins.
+    Write functions named probEarly, probOnTime, probLate that take a PMF and compute the fraction of births
+    that fall into each bin.
+    */
+    import std.conv : to;
+
+    auto otherBabies = Map(pregLengthsOther, aarr, "pregLengthsOther");
+    auto otherBabiesPMF = otherBabies;
+    otherBabiesPMF.normalize;
+
+    auto liveBirthsMap = Map(liveBirths.map!(row => row[idxOf()[PRGLENGTH]]).array, aarr, "liveBirths");
+    auto liveBirthsPMF = liveBirthsMap;
+    liveBirthsPMF.normalize;
+    
+    // we can easily calculate the probs with just one function
+    float birthProb(Map births, in int from, in int until) {
+        auto weeks = births.keys.array.filter!(k => from <= k && k <= until);
+        return weeks.map!(w => births.getVal(w)).sum * 100;
+    }
+    
+    writeln("Birth probabilities:");
+    writeln(format("First babies (early): %s%%", birthProb(firstBabiesPMF, -0, 37)));
+    writeln(format("Other babies (early): %s%%", birthProb(otherBabiesPMF, -0, 37)));
+    writeln(format("First babies (on time): %s%%", birthProb(firstBabiesPMF, 38, 40)));
+    writeln(format("Other babies (on time): %s%%", birthProb(otherBabiesPMF, 38, 40)));
+    auto firstMaxWeek = to!int(firstBabiesPMF.maxKey);
+    auto otherMaxWeek = to!int(otherBabiesPMF.maxKey);
+    writeln(format("First babies (late): %s%%", birthProb(firstBabiesPMF, 41, firstMaxWeek)));
+    writeln(format("Other babies (late): %s%%", birthProb(otherBabiesPMF, 41, otherMaxWeek)));
+
+}

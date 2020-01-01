@@ -43,7 +43,7 @@ struct Map
         dict = dict.dup;
     }
 
-    // get the getValuency of a given x value
+    /// Get the value of a given x key
     real getVal(real x)
     {
         return this.dict.get(x, 0);
@@ -129,7 +129,13 @@ struct Map
         return this.dict.byValue.maxElement;
     }
 
-    /// Return the key of the max freq/prob value from the Map
+    /// Return the max key
+    real maxKey()
+    {
+        return this.dict.byKey.maxElement;
+    }
+
+    /// Return the key of max freq/prob value from the Map
     real maxValueKey()
     {
         return this.items.maxElement!(pair => pair.value).key;
