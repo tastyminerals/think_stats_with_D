@@ -112,7 +112,7 @@ struct Map
     }
 
     /// Remove given x key value
-    void remove(real x)
+    void removeKey(real x)
     {
         this.dict.remove(x);
     }

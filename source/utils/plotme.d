@@ -12,7 +12,7 @@ import std.random : uniform;
 
 import ggplotd.aes : aes;
 import ggplotd.geom;
-import ggplotd.ggplotd : putIn, GGPlotD, title;
+import ggplotd.ggplotd : putIn, GGPlotD, title, Margins;
 import ggplotd.legend: discreteLegend;
 
 /++
@@ -32,7 +32,7 @@ void histogramXOfTwoClasses(Tuple!(real, string)[] data, string fileName, string
 Plots and saves a line plot of probabilities of two distinct classes to {fileName}.svg
 Accepts a tuple of two real values for x and y axis and a third string value is the name of a class.
 +/
-void filledLinesXYOfTwoClasses(Tuple!(real, real, string)[] data, string fileName, string titleName) {
+void filledLinesXYOfTwoClasses(T)(Tuple!(T, real, string)[] data, string fileName, string titleName) {
     auto gg = data
     .map!((a) => aes!("x", "y", "colour", "fill")(a[0], a[1], a[2], 0.45))
     .geomLine
@@ -45,12 +45,27 @@ void filledLinesXYOfTwoClasses(Tuple!(real, real, string)[] data, string fileNam
 
 /++
 Plots and saves a line plot of probabilities of one class to {fileName}.svg
-Accepts a tuple of two real values for x and y axis and a third string value is the name of a class.
+Accepts a tuple of two real values for x and y axis that belong to one class.
 +/
-void linesXYOfTwoClasses(Tuple!(real, real)[] data, string fileName, string titleName) {
+void linesXYOfOneClass(Tuple!(real, real)[] data, string fileName, string titleName) {
     auto gg = data
     .map!((a) => aes!("x", "y")(a[0], a[1]))
     .geomLine
     .putIn(GGPlotD().put(title(titleName)));
+    gg.save(fileName~".svg");
+}
+
+
+/++
+Plots and saves a line plot of probabilities of two classes to {fileName}.svg
+Accepts a tuple of two real values for x and y axis and a third string value is the name of a class.
++/
+void linesXYOfTwoClasses(Tuple!(real, real, string)[] data, string fileName, string titleName) {
+    auto gg = data
+    .map!((a) => aes!("x", "y", "colour")(a[0], a[1], a[2]))
+    .geomLine
+    .putIn(GGPlotD().put(title(titleName)));
+    
+    gg.put(discreteLegend(100, 50));
     gg.save(fileName~".svg");
 }

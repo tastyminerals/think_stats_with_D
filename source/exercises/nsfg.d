@@ -1,8 +1,27 @@
 module exercises.nsfg;
 
+import utils.pmf : Map;
+import std.stdio : writeln, writefln;
+import std.array : array;
+import std.algorithm : each, sort, sum, partition, map, filter;
+import std.range : iota;
+    
 const string OUTCOME = "outcome";
 const string BIRTHORD = "birthord";
 const string PRGLENGTH = "prglength";
+
+/// Calculate probability of birth given a time range in weeks.
+float birthProb(Map births, in int from, in int until) {
+    auto weeks = births.keys.array.filter!(k => from <= k && k <= until);
+    return weeks.map!(w => births.getVal(w)).sum * 100;
+}
+
+/// Condition PMF probabilities on a specific week.
+Map conditionOnWeek(Map pmf, in int week) {
+    iota(0, week).each!(a => pmf.removeKey(a));
+    pmf.normalize;
+    return pmf;
+}
 
 /// The exercises that work with mir.ndslice array generated from NSFG dataset.
 void runExercises(real[][] pregsData, ulong[string]function() idxOf)
@@ -18,12 +37,9 @@ void runExercises(real[][] pregsData, ulong[string]function() idxOf)
     The result should be 13593 pregnancies.
     We follow the D implementation below.
     */
-    import std.stdio : writeln;
-    import std.array : array;
-    import std.algorithm : each, sort, sum, partition, map, filter;
     import std.math : abs, sqrt;
     import std.format: format;
-    
+
     assert(pregsData.length == 13_593);
     writeln("Number of pregnancies: ", pregsData.length);
 
@@ -98,7 +114,6 @@ void runExercises(real[][] pregsData, ulong[string]function() idxOf)
     Write a function called mode that takes a Histogram object and returns the most frequent value.
     */
     // instead of writing a separate function we implement mode as maxValueKey member function in Map struct
-    import utils.pmf : Map;
 
     real[real] aarr;
     auto firstBabies = Map(pregLengths1, aarr, "pregLengths1");
@@ -124,13 +139,9 @@ void runExercises(real[][] pregsData, ulong[string]function() idxOf)
     auto liveBirthsPMF = liveBirthsMap;
     liveBirthsPMF.normalize;
     
-    // we can easily calculate the probs with just one function
-    float birthProb(Map births, in int from, in int until) {
-        auto weeks = births.keys.array.filter!(k => from <= k && k <= until);
-        return weeks.map!(w => births.getVal(w)).sum * 100;
-    }
-    
-    writeln("Birth probabilities:");
+    // we can easily calculate the probs with just one birthProb function
+
+    writeln("------[Birth probabilities]------");
     writeln(format("First babies (early): %s%%", birthProb(firstBabiesPMF, -0, 37)));
     writeln(format("Other babies (early): %s%%", birthProb(otherBabiesPMF, -0, 37)));
     writeln(format("First babies (on time): %s%%", birthProb(firstBabiesPMF, 38, 40)));
@@ -140,4 +151,27 @@ void runExercises(real[][] pregsData, ulong[string]function() idxOf)
     writeln(format("First babies (late): %s%%", birthProb(firstBabiesPMF, 41, firstMaxWeek)));
     writeln(format("Other babies (late): %s%%", birthProb(otherBabiesPMF, 41, otherMaxWeek)));
 
+    /**
+    Exercise 2.7
+    Write a function that computes a conditional probability that a baby will be born during Week 39,
+    given that it was not born prior to Week 39.
+    
+    Generalize the function to compute the probability that a baby will be born during Week x,
+    given that it was not born prior to Week x, for all x.
+    Plot the value as a function of x for first babies and others.
+    */
+
+    auto firstBabiesPMF2 = firstBabies;
+    firstBabiesPMF2.normalize;
+    auto otherBabiesPMF2 = otherBabies;
+    otherBabiesPMF2.normalize;
+
+    writeln("------[Conditional birth probabilities from Week 39]------");
+    writefln("First babies (early): %s%%", birthProb(conditionOnWeek(firstBabiesPMF2, 38), -0, 37));
+    writefln("Other babies (early): %s%%", birthProb(conditionOnWeek(otherBabiesPMF2, 38), -0, 37));
+    writefln("First babies (on time): %s%%", birthProb(conditionOnWeek(firstBabiesPMF2, 38), 38, 40));
+    writefln("Other babies (on time): %s%%", birthProb(conditionOnWeek(otherBabiesPMF2, 38), 38, 40));
+    writefln("First babies (late): %s%%", birthProb(conditionOnWeek(firstBabiesPMF2, 38), 41, firstMaxWeek));
+    writefln("Other babies (late): %s%%", birthProb(conditionOnWeek(otherBabiesPMF2, 38), 41, otherMaxWeek));
+    generateFigure27(pregLengths1, pregLengthsOther);
 }
