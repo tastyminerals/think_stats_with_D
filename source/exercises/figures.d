@@ -72,7 +72,7 @@ void generateFigure23(real[] pregLengths1, real[] pregLengthsOther)
 }
 
 /// Figure 2.4* (Exercise 2.7): plot the probability that a baby will be born during Week x.
-void generateFigure27(real[] pregLengths1, real[] pregLengthsOther) {
+void generateFigureFor27(real[] pregLengths1, real[] pregLengthsOther) {
     import exercises.nsfg: conditionOnWeek;
 
     real[real] aarr;

@@ -173,5 +173,5 @@ void runExercises(real[][] pregsData, ulong[string]function() idxOf)
     writefln("Other babies (on time): %s%%", birthProb(conditionOnWeek(otherBabiesPMF2, 38), 38, 40));
     writefln("First babies (late): %s%%", birthProb(conditionOnWeek(firstBabiesPMF2, 38), 41, firstMaxWeek));
     writefln("Other babies (late): %s%%", birthProb(conditionOnWeek(otherBabiesPMF2, 38), 41, otherMaxWeek));
-    generateFigure27(pregLengths1, pregLengthsOther);
+    generateFigureFor27(pregLengths1, pregLengthsOther);
 }
