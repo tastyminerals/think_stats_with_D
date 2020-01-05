@@ -71,7 +71,7 @@ real[] convertLines(in string[] lines, in Column[] cols)
     return records;
 }
 
-auto toDataSlice(string fileName, in Column[] cols)
+auto toDataMatrix(string fileName, in Column[] cols)
 {
     auto lines = readFileByLines(fileName);
     writeln(lines.length, " lines read");
@@ -94,12 +94,11 @@ void pumpkins() {
 void main()
 {
     import nsfg = exercises.nsfg: runExercises;
-    // import other = exercises.other: runExercises;
+    import other = exercises.other: runExercises;
 
-    real[][] pregSlice = toDataSlice(pregnancies2002, PREGCOLS);
-    nsfg.runExercises(pregSlice, &getColIndex);
-    // mod2.runExercises;
-    
+    real[][] pregMatrix = toDataMatrix(pregnancies2002, PREGCOLS);
+    nsfg.runExercises(pregMatrix, &getColIndex);
+    // other.runExercises;
 
 }
 

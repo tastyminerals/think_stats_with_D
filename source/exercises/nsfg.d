@@ -100,10 +100,10 @@ void runExercises(real[][] pregsData, ulong[string]function() idxOf)
     import exercises.figures;
 
     auto pregLengths1 = birthord1Rows.map!(row => row[idxOf()[PRGLENGTH]]).array;
-    double pregLengths1Std = pregLengths1.variance.sqrt;
+    const double pregLengths1Std = pregLengths1.variance.sqrt;
     writeln("First babies pregnancy length std (weeks): ", pregLengths1Std);
     auto pregLengthsOther = birthordOtherRows.map!(row => row[idxOf()[PRGLENGTH]]).array;
-    double pregLengthsOtherStd = pregLengthsOther.variance.sqrt;
+    const double pregLengthsOtherStd = pregLengthsOther.variance.sqrt;
     writeln("Second and other babies pregnancy length std (weeks): ", pregLengthsOtherStd);
     writeln("Difference (days): ", abs(pregLengths1Std - pregLengthsOtherStd) * 7);
     generateFigure21(pregLengths1, pregLengthsOther);
@@ -138,7 +138,7 @@ void runExercises(real[][] pregsData, ulong[string]function() idxOf)
     auto liveBirthsMap = Map(liveBirths.map!(row => row[idxOf()[PRGLENGTH]]).array, aarr, "liveBirths");
     auto liveBirthsPMF = liveBirthsMap;
     liveBirthsPMF.normalize;
-    
+
     // we can easily calculate the probs with just one birthProb function
 
     writeln("------[Birth probabilities]------");
@@ -174,4 +174,50 @@ void runExercises(real[][] pregsData, ulong[string]function() idxOf)
     writefln("First babies (late): %s%%", birthProb(conditionOnWeek(firstBabiesPMF2, 38), 41, firstMaxWeek));
     writefln("Other babies (late): %s%%", birthProb(conditionOnWeek(otherBabiesPMF2, 38), 41, otherMaxWeek));
     generateFigureFor27(pregLengths1, pregLengthsOther);
+
+    /**
+    Exercise 2.8
+    Based on the results from the previous exercises, suppose you were asked to summarize what you learned 
+    about whether first babies arrive late. Which summary statistics would you use if you wanted to get a
+    story on the evening news? Which ones would you use if you wanted to reassure an anxious patient?
+    Finally, imagine that you are Cecil Adams, author of The Straight Dope (http://straightdope.com), and 
+    your job is to answer the question, “Do first babies arrive late?” 
+    Write a paragraph that uses the results in this chapter to answer the question clearly, precisely, 
+    and accurately.
+    */
+    writeln(msg);
+
 }
+
+const string msg = q"EOS
+
+Evening news story
+    >>> Expecting your first baby is a patience test! <<<
+    Waiting for you firstborne to arrive into this world might turn out to be your biggest exercise in patience
+    this year. Yes! First babies arrive late and this is a statistical fact now! -- scientists say. They
+    collected and analyzed over 15k pregnancy records and arrived at the conclusion that statistically first
+    babies are born later than the second babies with up to three weeks difference! So, buckle up novice
+    parents, the first road trip will be bumpy.
+
+Anxious patient story
+    Don't worry about the evening news article. It was written to attract attention and nothing more. The 
+    actual probability of having the first baby later is less than 10%! You can as well write off such results
+    as a statistical error. Moreover, first babies actually tend to arrive earlier until 39-th week so in the end
+    it really is a mixed bag of opinions where genetic reasons might be playing a bigger role.
+
+Do first babies arrive late?
+    There is a difference in birth due dates depending on whether it is the first baby or not. First babies 
+    tend to arrive earlier or later rather than on time. Second and other babies tend to be more on time than  
+    earlier and later. However, the difference although statistically significant is not that big.    
+
+    Concretely:
+    First babies (early): 18.2416% +1.4%
+    Other babies (early): 16.8321%
+    First babies (on time): 66.2135% -7.6%
+    Other babies (on time): 73.7909%
+    First babies (late): 15.545% +6.2%
+    Other babies (late): 9.37698%
+    
+    So, I would say that the first babies are less likely to arrive on time and more likely to arrive late.
+    But then again, on average. There is a high chance that in your paticular case this claim won't be supported.
+EOS";
